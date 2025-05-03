@@ -1,0 +1,68 @@
+import st7735
+from PIL import Image
+import time
+import cv2
+import numpy as np
+
+disp_width, disp_height = 128, 160
+
+img1 = cv2.imread('COIN CASINO NEW.png')
+img2 = cv2.imread('JACKPOT CASINO NEW.png')
+
+img1 = cv2.resize(img1, (disp_width, disp_height))
+img2 = cv2.resize(img2, (disp_width, disp_height))
+
+height, width = img1.shape[:2]
+
+# Initialize both displays with different CS and DC pins
+disp1 = st7735.ST7735(
+    port=0, 
+    cs=0,  # CS for display 1
+    dc="GPIO24",  # DC for display 1
+    backlight="GPIO22",
+    rst="GPIO25",
+    rotation=180, 	
+    spi_speed_hz=16000000,
+    invert=False
+)
+
+disp2 = st7735.ST7735(
+    port=0, 
+    cs=1,  # CS for display 1
+    dc="GPIO23",  # DC for display 1
+    backlight="GPIO27",
+    rst="GPIO17",
+    rotation=180, 	
+    spi_speed_hz=16000000,
+    invert=False
+)
+
+# Start both displays
+disp1.begin()
+disp2.begin()
+
+# Clear both screens
+img_black = Image.new('RGB', (disp1.width, disp1.height), (0, 0, 0))
+disp1.display(img_black)
+disp2.display(img_black)
+time.sleep(0.5)  # Small delay to ensure both are cleared
+
+#TESTING
+#frame_image = Image.fromarray(ACTUALimg.astype('uint8'), 'RGB')
+#disp1.display(frame_image)
+#disp2.display(frame_image)
+
+
+# ANIMATION
+for i in range(0, height+1, 10):
+    frame = np.zeros_like(img1)
+    frame[:height - i] = img1[i:]
+    frame[height - i:] = img2[:i]
+    
+    # Convert NumPy array to PIL image before displaying
+    frame_image = Image.fromarray(frame.astype('uint8'), 'RGB')
+    
+    disp1.display(frame_image)
+    disp2.display(frame_image)
+    #time.sleep(0.01)
+
